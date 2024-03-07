@@ -6,9 +6,11 @@
 #include "GameFramework/Character.h"
 #include "Abilities/GameplayAbility.h"
 #include "AbilitySystemInterface.h"
+#include "GASGameTypes.h"
 #include "Logging/LogMacros.h"
 #include "GASCharacter.generated.h"
 
+struct FCharacterData;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -56,6 +58,8 @@ public:
 	AGASCharacter();
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	virtual void PostInitializeComponents() override;
 	
 	bool ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> Effect, FGameplayEffectContextHandle InEffectContext);
 
@@ -102,5 +106,24 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UFUNCTION(BlueprintCallable)
+	FCharacterData GetCharacterData() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetCharacterData(const FCharacterData inCharacterData);
+
+protected:
+
+	UPROPERTY(ReplicatedUsing=OnRep_CharacterData)
+	FCharacterData CharacterData;
+
+	UFUNCTION()
+	void OnRep_CharacterData();
+
+	virtual void InitFromCharacterData(const FCharacterData inCharacterData, bool bFromApplication = false);
+
+	UPROPERTY(EditDefaultsOnly)
+	class UCharacterDataAsset* CharacterDataAsset;
 };
 

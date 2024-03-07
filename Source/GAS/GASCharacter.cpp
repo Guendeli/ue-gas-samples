@@ -10,11 +10,13 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Net/UnrealNetwork.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/Attributes/AG_AttributeSetBase.h"
 #include "AbilitySystem/Components/AG_AbilitySystemComponentBase.h"
+#include "DataAssets/CharacterDataAsset.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -69,6 +71,16 @@ AGASCharacter::AGASCharacter()
 UAbilitySystemComponent* AGASCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+void AGASCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if(CharacterDataAsset != nullptr)
+	{
+		SetCharacterData(CharacterDataAsset->CharacterData);
+	}
 }
 
 bool AGASCharacter::ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> Effect,
@@ -156,6 +168,26 @@ void AGASCharacter::BeginPlay()
 	}
 }
 
+FCharacterData AGASCharacter::GetCharacterData() const
+{
+	return CharacterData;
+}
+
+void AGASCharacter::SetCharacterData(const FCharacterData inCharacterData)
+{
+	CharacterData = inCharacterData;
+	InitFromCharacterData(CharacterData);
+}
+
+void AGASCharacter::OnRep_CharacterData()
+{
+	InitFromCharacterData(CharacterData, true);
+}
+
+void AGASCharacter::InitFromCharacterData(const FCharacterData inCharacterData, bool bFromApplication)
+{
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -214,4 +246,10 @@ void AGASCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+void AGASCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AGASCharacter, CharacterData);
 }
