@@ -64,24 +64,14 @@ public:
 	bool ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> Effect, FGameplayEffectContextHandle InEffectContext);
 
 protected:
-
-	void InitializeAttributes();
+	
 	void GiveAbilities();
 	void ApplyStartupEffects();
 
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="GAS")
-	TSubclassOf<UGameplayEffect> DefaultAtrributesSet;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="GAS")
-	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="GAS")
-	TArray<TSubclassOf<UGameplayEffect>> DefaultEffects;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="GAS")
+	UPROPERTY(EditDefaultsOnly, Category="GAS")
 	UAG_AbilitySystemComponentBase* AbilitySystemComponent;
 
 	UPROPERTY(Transient)

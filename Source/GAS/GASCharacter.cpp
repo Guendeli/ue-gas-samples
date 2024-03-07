@@ -98,22 +98,12 @@ bool AGASCharacter::ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> Effec
 	return false;
 }
 
-void AGASCharacter::InitializeAttributes()
-{
-	if(GetLocalRole() == ROLE_Authority && DefaultAtrributesSet && AttributeSet)
-	{
-		FGameplayEffectContextHandle effectContext = AbilitySystemComponent->MakeEffectContext();
-		effectContext.AddSourceObject(this);
-
-		ApplyGameplayEffectToSelf(DefaultAtrributesSet, effectContext);
-	}
-}
 
 void AGASCharacter::GiveAbilities()
 {
 	if(HasAuthority() && AbilitySystemComponent)
 	{
-		for(TSubclassOf<UGameplayAbility> defaultAbility : DefaultAbilities)
+		for(TSubclassOf<UGameplayAbility> defaultAbility : CharacterData.Abilities)
 		{
 			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(defaultAbility));
 		}
@@ -127,7 +117,7 @@ void AGASCharacter::ApplyStartupEffects()
 		FGameplayEffectContextHandle effectContext = AbilitySystemComponent->MakeEffectContext();
 		effectContext.AddSourceObject(this);
 
-		for(TSubclassOf<UGameplayEffect> characterEffect : DefaultEffects)
+		for(TSubclassOf<UGameplayEffect> characterEffect : CharacterData.Effects)
 		{
 			ApplyGameplayEffectToSelf(characterEffect, effectContext);
 		}
@@ -140,7 +130,6 @@ void AGASCharacter::PossessedBy(AController* NewController)
 
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 
-	InitializeAttributes();
 	GiveAbilities();
 	ApplyStartupEffects();
 }
@@ -150,7 +139,6 @@ void AGASCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
-	InitializeAttributes();
 }
 
 void AGASCharacter::BeginPlay()
