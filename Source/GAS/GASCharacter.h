@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Abilities/GameplayAbility.h"
+#include "AbilitySystemInterface.h"
 #include "Logging/LogMacros.h"
 #include "GASCharacter.generated.h"
 
@@ -11,12 +13,18 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class UAG_AbilitySystemComponentBase;
+class UAG_AttributeSetBase;
+
+class UGameplayEffect;
+class UGameplayAbility;
+
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class AGASCharacter : public ACharacter
+class AGASCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -46,10 +54,35 @@ class AGASCharacter : public ACharacter
 
 public:
 	AGASCharacter();
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
+	bool ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> Effect, FGameplayEffectContextHandle InEffectContext);
 
 protected:
 
+	void InitializeAttributes();
+	void GiveAbilities();
+	void ApplyStartupEffects();
+
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="GAS")
+	TSubclassOf<UGameplayEffect> DefaultAtrributesSet;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="GAS")
+	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="GAS")
+	TArray<TSubclassOf<UGameplayEffect>> DefaultEffects;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="GAS")
+	UAG_AbilitySystemComponentBase* AbilitySystemComponent;
+
+	UPROPERTY(Transient)
+	UAG_AttributeSetBase* AttributeSet;
+	
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
