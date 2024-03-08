@@ -14,18 +14,19 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystem/ActorComponents/AG_CharacterMovementComponent.h"
 #include "AbilitySystem/Attributes/AG_AttributeSetBase.h"
 #include "AbilitySystem/Components/AG_AbilitySystemComponentBase.h"
 #include "DataAssets/CharacterDataAsset.h"
+#include "AbilitySystem/ActorComponents/AG_CharacterMovementComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
 // AGASCharacter
-
-AGASCharacter::AGASCharacter()
+AGASCharacter::AGASCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.SetDefaultSubobjectClass<UAG_CharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
-	// Set size for collision capsule
+		// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
@@ -67,7 +68,6 @@ AGASCharacter::AGASCharacter()
 
 	AttributeSet = CreateDefaultSubobject<UAG_AttributeSetBase>(TEXT("AttributeSet"));
 }
-
 UAbilitySystemComponent* AGASCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
