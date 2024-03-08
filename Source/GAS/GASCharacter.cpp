@@ -18,6 +18,7 @@
 #include "AbilitySystem/Attributes/AG_AttributeSetBase.h"
 #include "AbilitySystem/Components/AG_AbilitySystemComponentBase.h"
 #include "DataAssets/CharacterDataAsset.h"
+#include "GAS/AbilitySystem/ActorComponents/AG_FootstepsComponent.h"
 #include "AbilitySystem/ActorComponents/AG_CharacterMovementComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -67,6 +68,10 @@ AGASCharacter::AGASCharacter(const FObjectInitializer& ObjectInitializer) : Supe
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	AttributeSet = CreateDefaultSubobject<UAG_AttributeSetBase>(TEXT("AttributeSet"));
+
+	// Footsteps
+
+	FootstepsComponent = CreateDefaultSubobject<UAG_FootstepsComponent>(TEXT("FootstepsComponent"));
 }
 UAbilitySystemComponent* AGASCharacter::GetAbilitySystemComponent() const
 {

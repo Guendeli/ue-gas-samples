@@ -33,3 +33,10 @@ struct FCharacterAnimationData
 	UPROPERTY(EditDefaultsOnly)
 	class UAnimSequenceBase* IdleAnimationAsset = nullptr;
 };
+
+UENUM(BlueprintType)
+enum EFoot
+{
+	Left UMETA(DisplayName = "Left"),
+	Right UMETA(DisplayName = "Right")
+};

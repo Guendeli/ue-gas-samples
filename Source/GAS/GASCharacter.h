@@ -115,5 +115,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	class UCharacterDataAsset* CharacterDataAsset;
+
+	UPROPERTY(BlueprintReadOnly)
+	class UAG_FootstepsComponent* FootstepsComponent;
 };
 
