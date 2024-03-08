@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
 #include "GASGameTypes.generated.h" 
 
 USTRUCT(BlueprintType)
@@ -16,6 +15,9 @@ struct FCharacterData
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "GAS")
 	TArray<TSubclassOf<class UGameplayAbility>> Abilities;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category= "Animation")
+	class UCharacterAnimDataAsset* CharacterAnimDataAsset;
 };
 
 
@@ -29,5 +31,5 @@ struct FCharacterAnimationData
 	class UBlendSpace* MovementBlendSpace = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
-	class UAnimationAsset* IdleAnimationAsset = nullptr;
+	class UAnimSequenceBase* IdleAnimationAsset = nullptr;
 };
