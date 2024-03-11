@@ -115,6 +115,15 @@ void AGASCharacter::PawnClientRestart()
 	}
 }
 
+void AGASCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	if(AbilitySystemComponent == nullptr)
+		return;
+
+	AbilitySystemComponent->RemoveActiveEffectsWithTags(InAirTags);
+}
+
 
 void AGASCharacter::GiveAbilities()
 {
@@ -207,8 +216,8 @@ void AGASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AGASCharacter::OnJumpStarted);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGASCharacter::OnJumpEnded);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGASCharacter::Move);
@@ -257,6 +266,20 @@ void AGASCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+void AGASCharacter::OnJumpStarted()
+{
+	FGameplayEventData payload;
+	payload.Instigator = this;
+	payload.EventTag = JumpEventTag;
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, JumpEventTag, payload);
+}
+
+void AGASCharacter::OnJumpEnded()
+{
+}
+
 void AGASCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

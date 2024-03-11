@@ -64,7 +64,7 @@ public:
 	bool ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> Effect, FGameplayEffectContextHandle InEffectContext);
 
 	virtual void PawnClientRestart() override;
-	
+	virtual void Landed(const FHitResult& Hit) override;
 protected:
 	
 	void GiveAbilities();
@@ -84,7 +84,9 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
+
+	void OnJumpStarted();
+	void OnJumpEnded();		
 
 protected:
 	// APawn interface
@@ -121,5 +123,12 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	class UAG_FootstepsComponent* FootstepsComponent;
+
+	// Gameplay Events
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag JumpEventTag;
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTagContainer InAirTags;
 };
 
