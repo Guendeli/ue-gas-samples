@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GASGameTypes.h"
 #include "Components/ActorComponent.h"
 #include "AG_FootstepsComponent.generated.h"
 
@@ -20,9 +21,11 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	UPROPERTY(EditDefaultsOnly)
+	FName LeftFootSocketName = TEXT("foot_l");
 
-		
+	UPROPERTY(EditDefaultsOnly)
+	FName RightFootSocketName = TEXT("foot_r");
+public:	
+	void HandleFootstep(EFoot foot);
 };
