@@ -54,6 +54,9 @@ class AGASCharacter : public ACharacter, public IAbilitySystemInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* CrouchAction;
+
 public:
 	AGASCharacter(const FObjectInitializer& ObjectInitializer); 
 
@@ -65,6 +68,9 @@ public:
 
 	virtual void PawnClientRestart() override;
 	virtual void Landed(const FHitResult& Hit) override;
+
+	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 protected:
 	
 	void GiveAbilities();
@@ -86,7 +92,11 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	void OnJumpStarted();
-	void OnJumpEnded();		
+	void OnJumpEnded();
+
+	void OnCrouchStarted();
+	void OnCrouchEnded();		
+
 
 protected:
 	// APawn interface
@@ -130,5 +140,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTagContainer InAirTags;
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTagContainer CrouchTags;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayEffect> CrouchStateEffect;
 };
 

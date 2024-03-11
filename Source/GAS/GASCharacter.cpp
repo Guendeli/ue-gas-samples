@@ -124,6 +124,31 @@ void AGASCharacter::Landed(const FHitResult& Hit)
 	AbilitySystemComponent->RemoveActiveEffectsWithTags(InAirTags);
 }
 
+void AGASCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+
+	if(AbilitySystemComponent == nullptr) return;
+	if(!CrouchStateEffect.Get()) return;
+
+	FGameplayEffectContextHandle effectsContext = AbilitySystemComponent->MakeEffectContext();
+	FGameplayEffectSpecHandle specHandle = AbilitySystemComponent->MakeOutgoingSpec(CrouchStateEffect, 1, effectsContext);
+	if(specHandle.IsValid())
+	{
+		FActiveGameplayEffectHandle activeGEHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*specHandle.Data.Get());
+	}
+
+}
+
+void AGASCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	if(AbilitySystemComponent != nullptr && CrouchStateEffect.Get())
+	{
+		AbilitySystemComponent->RemoveActiveGameplayEffectBySourceEffect(CrouchStateEffect, AbilitySystemComponent);
+	}
+	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+}
+
 
 void AGASCharacter::GiveAbilities()
 {
@@ -224,6 +249,14 @@ void AGASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGASCharacter::Look);
+
+		//crouching
+		if(CrouchAction != nullptr)
+		{
+			EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AGASCharacter::OnCrouchStarted);
+			EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AGASCharacter::OnCrouchEnded);
+		}
+		
 	}
 	else
 	{
@@ -278,6 +311,20 @@ void AGASCharacter::OnJumpStarted()
 
 void AGASCharacter::OnJumpEnded()
 {
+}
+
+void AGASCharacter::OnCrouchStarted()
+{
+	if(AbilitySystemComponent == nullptr) return;
+	
+	AbilitySystemComponent->TryActivateAbilitiesByTag(CrouchTags, true); // TODO - Trying a different approach than Jump ability
+}
+
+void AGASCharacter::OnCrouchEnded()
+{
+	if(AbilitySystemComponent == nullptr) return;
+	
+	AbilitySystemComponent->CancelAbilities(&CrouchTags);// TODO - Trying a different approach than Jump ability
 }
 
 void AGASCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
