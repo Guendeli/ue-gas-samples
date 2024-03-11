@@ -103,6 +103,18 @@ bool AGASCharacter::ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> Effec
 	return false;
 }
 
+void AGASCharacter::PawnClientRestart()
+{
+	Super::PawnClientRestart();
+	APlayerController* pc = Cast<APlayerController>(GetController());
+	if(pc)
+	{
+		UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(pc->GetLocalPlayer());
+		subsystem->ClearAllMappings();
+		subsystem->AddMappingContext(DefaultMappingContext, 0);
+	}
+}
+
 
 void AGASCharacter::GiveAbilities()
 {

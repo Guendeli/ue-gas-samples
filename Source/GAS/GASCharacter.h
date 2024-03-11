@@ -63,6 +63,8 @@ public:
 	
 	bool ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> Effect, FGameplayEffectContextHandle InEffectContext);
 
+	virtual void PawnClientRestart() override;
+	
 protected:
 	
 	void GiveAbilities();
