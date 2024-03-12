@@ -20,125 +20,134 @@ bool UAG_VaultOverAbility::CommitCheck(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	FGameplayTagContainer* OptionalRelevantTags)
 {
-	if(!Super::CommitCheck(Handle, ActorInfo, ActivationInfo, OptionalRelevantTags)) return false;
+	if (!Super::CommitCheck(Handle, ActorInfo, ActivationInfo, OptionalRelevantTags))
+	{
+		return false;
+	}
 
-	AGASCharacter* character = GetCharacterFromActorInfo();
-	if(!IsValid(character)) return false;
+	AGASCharacter* Character = GetCharacterFromActorInfo();
 
-	const FVector startLocation = character->GetActorLocation();
-	const FVector forwardVector = character->GetActorForwardVector();
-	const FVector upVector = character->GetActorUpVector();
+	if (!IsValid(Character))
+	{
+		return false;
+	}
 
-	TArray<AActor*> actorsToIgnore = {character};
+	const FVector StartLocation = Character->GetActorLocation();
+	const FVector ForwardVector = Character->GetActorForwardVector();
+	const FVector UpVector = Character->GetActorUpVector();
 
-	// debug Only
+	TArray<AActor*> ActorsToIgnore = {Character};
+
 	static const auto CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("ShowDebugTraversal"));
-	const bool bIsDebug = CVar->GetInt() > 0;
-	EDrawDebugTrace::Type debugDrawType = bIsDebug ? EDrawDebugTrace::ForDuration : EDrawDebugTrace::None;
+	const bool bShowTraversal = CVar->GetInt() > 0;
+
+	EDrawDebugTrace::Type DebugDrawType = bShowTraversal ? EDrawDebugTrace::ForDuration : EDrawDebugTrace::None;
 
 	bool bJumpToLocationSet = false;
+
 	int32 JumpToLocationIdx = INDEX_NONE;
-	
+
 	int i = 0;
-	FHitResult hitResult;
-	float maxJumpDistance = HorizontalTraceLenght;
 
-	for(i = 0;i < HorizontalTraceCount; i++)
+	FHitResult TraceHit;
+
+	float MaxJumpDistance = HorizontalTraceLenght;
+
+	for (;i < HorizontalTraceCount; ++i)
 	{
-		const FVector traceStart = startLocation + i * upVector * HorizontalTraceStep;
-		const FVector traceEnd = traceStart + forwardVector * HorizontalTraceLenght;
+		const FVector TraceStart = StartLocation + i * UpVector * HorizontalTraceStep;
+		const FVector TraceEnd = TraceStart + ForwardVector * HorizontalTraceLenght;
 
-		bool hTrace = UKismetSystemLibrary::SphereTraceSingleForObjects(this,
-			traceStart, traceEnd, HorizontalTraceRadius,
-			TraceObjectTypes, true, actorsToIgnore,debugDrawType, hitResult,true);
-		if(hTrace)
+		if (UKismetSystemLibrary::SphereTraceSingleForObjects(this, TraceStart, TraceEnd, HorizontalTraceRadius, TraceObjectTypes, true, ActorsToIgnore, DebugDrawType, TraceHit, true))
 		{
-			if(JumpToLocationIdx == INDEX_NONE &&
-				(i <  HorizontalTraceCount - 1))
+			if (JumpToLocationIdx == INDEX_NONE && (i < HorizontalTraceCount - 1))
 			{
 				JumpToLocationIdx = i;
-				JumpToLocation = hitResult.Location;
-			} else if (JumpToLocationIdx == i -1)
-			{
-				maxJumpDistance = FVector::Dist2D(hitResult.Location, traceStart);
-				break;
-				
+				JumpToLocation = TraceHit.Location;
 			}
-		} else
+			else if (JumpToLocationIdx == (i - 1))
+			{
+				MaxJumpDistance = FVector::Dist2D(TraceHit.Location, TraceStart);
+				break;
+			}
+		}
+		else
 		{
-			if(JumpToLocationIdx != INDEX_NONE)
+			if (JumpToLocationIdx != INDEX_NONE)
 			{
 				break;
 			}
 		}
 	}
 
-	if(JumpToLocationIdx == INDEX_NONE)
+	if (JumpToLocationIdx == INDEX_NONE)
 	{
 		return false;
 	}
 
-	// VERTICAL TRACE
-	const float distanceToJumpTo = FVector::Dist2D(startLocation, JumpToLocation);
-	const float maxVerticalTraceDistance = maxJumpDistance - distanceToJumpTo;
+	const float DistanceToJumpTo = FVector::Dist2D(StartLocation, JumpToLocation);
 
-	if(maxVerticalTraceDistance <= 0)
+	const float MaxVerticalTraceDistance = MaxJumpDistance - DistanceToJumpTo;
+
+	if (MaxVerticalTraceDistance < 0)
 	{
 		return false;
 	}
 
-	if(i == HorizontalTraceCount)
+	if (i == HorizontalTraceCount)
 	{
 		i = HorizontalTraceCount - 1;
 	}
 
-	const float verticalTraceLenght = FMath::Abs(JumpToLocation.Z - (startLocation + i * upVector * HorizontalTraceStep).Z);
-	FVector verticalStartLocation = JumpToLocation + upVector * verticalTraceLenght;
-	i = 0;
-	const float verticalTraceCount = maxVerticalTraceDistance / VerticalTraceStep;
-	bool bJumpOverLocationSet = false;
-	for(i = 0; i < verticalTraceCount; i++)
-	{
-		const FVector traceStart = verticalStartLocation + i * forwardVector * VerticalTraceStep;
-		const FVector traceEnd = traceStart + upVector * verticalTraceLenght * -1; // We trace down;
+	const float VerticalTraceLength = FMath::Abs(JumpToLocation.Z - (StartLocation + i * UpVector * HorizontalTraceStep).Z);
 
-		bool vTrace = UKismetSystemLibrary::SphereTraceSingleForObjects(this,
-			traceStart, traceEnd, VerticalTraceRadius,
-			TraceObjectTypes, true, actorsToIgnore,debugDrawType, hitResult,true);
-		if(vTrace)
+	FVector VerticalStartLocation = JumpToLocation + UpVector * VerticalTraceLength;
+
+	i = 0;
+
+	const float VerticalTraceCount = MaxVerticalTraceDistance / VerticalTraceStep;
+
+	bool bJumpOverLocationSet = false;
+
+	for (; i <= VerticalTraceCount; ++i)
+	{
+		const FVector TraceStart = VerticalStartLocation + i * ForwardVector * VerticalTraceStep;
+		const FVector TraceEnd = TraceStart + UpVector * VerticalTraceLength * -1;
+
+		if (UKismetSystemLibrary::SphereTraceSingleForObjects(this, TraceStart, TraceEnd, HorizontalTraceRadius, TraceObjectTypes, true, ActorsToIgnore, DebugDrawType, TraceHit, true))
 		{
-			JumpOverLocation = hitResult.ImpactPoint;
-			if(i == 0)
+			JumpOverLocation = TraceHit.ImpactPoint;
+
+			if (i == 0)
 			{
 				JumpToLocation = JumpOverLocation;
-			} else if (i != 0)
-			{
-				bJumpOverLocationSet = true;
-				break;
 			}
+		}
+		else if(i != 0)
+		{
+			bJumpOverLocationSet = true;
+			break;
 		}
 	}
 
-	if(bJumpOverLocationSet == false)
+	if (!bJumpOverLocationSet)
 	{
 		return false;
 	}
 
-	// final trace
-	const FVector traceStart = JumpOverLocation + forwardVector * VerticalTraceStep;
-	bool finalTrace = UKismetSystemLibrary::SphereTraceSingleForObjects(this,
-			traceStart, JumpOverLocation, VerticalTraceRadius,
-			TraceObjectTypes, true, actorsToIgnore,debugDrawType, hitResult,true);
-	if(finalTrace)
+	const FVector TraceStart = JumpOverLocation + ForwardVector * VerticalTraceStep;
+
+	if (UKismetSystemLibrary::SphereTraceSingleForObjects(this, TraceStart, JumpOverLocation, HorizontalTraceRadius, TraceObjectTypes, true, ActorsToIgnore, DebugDrawType, TraceHit, true))
 	{
-		JumpOverLocation = hitResult.ImpactPoint;
+		JumpOverLocation = TraceHit.ImpactPoint;
 	}
 
-	if(bIsDebug)
+	if (bShowTraversal)
 	{
-		DrawDebugSphere(GetWorld(), JumpToLocation, 15,16,FColor::White, false, 7);
-		DrawDebugSphere(GetWorld(), JumpOverLocation, 15,16,FColor::White, false, 7);
+		DrawDebugSphere(GetWorld(), JumpToLocation, 15, 16, FColor::White, false, 7);
+		DrawDebugSphere(GetWorld(), JumpOverLocation, 15, 16, FColor::White, false, 7);
 	}
+
 	return true;
 }
 
