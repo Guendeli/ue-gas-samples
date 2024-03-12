@@ -69,8 +69,10 @@ AGASCharacter::AGASCharacter(const FObjectInitializer& ObjectInitializer) : Supe
 
 	AttributeSet = CreateDefaultSubobject<UAG_AttributeSetBase>(TEXT("AttributeSet"));
 
-	// Footsteps
+	// Bind atribute delegates
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMovementSpeedAttribute()).AddUObject(this, &AGASCharacter::OnMaxMovementSpeedChanged);
 
+	// Footsteps
 	FootstepsComponent = CreateDefaultSubobject<UAG_FootstepsComponent>(TEXT("FootstepsComponent"));
 }
 UAbilitySystemComponent* AGASCharacter::GetAbilitySystemComponent() const
@@ -101,6 +103,11 @@ bool AGASCharacter::ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> Effec
 		return activeGEHandle.WasSuccessfullyApplied();
 	}
 	return false;
+}
+
+void AGASCharacter::OnMaxMovementSpeedChanged(const FOnAttributeChangeData& Data)
+{
+	GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
 }
 
 void AGASCharacter::PawnClientRestart()
@@ -256,6 +263,12 @@ void AGASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 			EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AGASCharacter::OnCrouchStarted);
 			EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AGASCharacter::OnCrouchEnded);
 		}
+
+		if(SprintAction != nullptr)
+		{
+			EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AGASCharacter::OnSprintStarted);
+			EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AGASCharacter::OnSprintEnded);
+		}
 		
 	}
 	else
@@ -325,6 +338,20 @@ void AGASCharacter::OnCrouchEnded()
 	if(AbilitySystemComponent == nullptr) return;
 	
 	AbilitySystemComponent->CancelAbilities(&CrouchTags);// TODO - Trying a different approach than Jump ability
+}
+
+void AGASCharacter::OnSprintStarted()
+{
+	if(AbilitySystemComponent == nullptr) return;
+	
+	AbilitySystemComponent->TryActivateAbilitiesByTag(SprintTags, true); // TODO - Trying a different approach than Jump ability
+}
+
+void AGASCharacter::OnSprintEnded()
+{
+	if(AbilitySystemComponent == nullptr) return;
+	
+	AbilitySystemComponent->CancelAbilities(&SprintTags);// TODO - Trying a different approach than Jump ability
 }
 
 void AGASCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

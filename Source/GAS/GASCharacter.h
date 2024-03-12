@@ -57,6 +57,9 @@ class AGASCharacter : public ACharacter, public IAbilitySystemInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* SprintAction;
+
 public:
 	AGASCharacter(const FObjectInitializer& ObjectInitializer); 
 
@@ -66,11 +69,13 @@ public:
 	
 	bool ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> Effect, FGameplayEffectContextHandle InEffectContext);
 
+	void OnMaxMovementSpeedChanged(const FOnAttributeChangeData& Data);
+	
 	virtual void PawnClientRestart() override;
 	virtual void Landed(const FHitResult& Hit) override;
-
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+
 protected:
 	
 	void GiveAbilities();
@@ -95,8 +100,10 @@ protected:
 	void OnJumpEnded();
 
 	void OnCrouchStarted();
-	void OnCrouchEnded();		
+	void OnCrouchEnded();
 
+	void OnSprintStarted();
+	void OnSprintEnded();
 
 protected:
 	// APawn interface
@@ -146,5 +153,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> CrouchStateEffect;
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTagContainer SprintTags;
+
+	// Delegates
+	FDelegateHandle MaxMovementSpeedChangedDelegateHandle;
 };
 
