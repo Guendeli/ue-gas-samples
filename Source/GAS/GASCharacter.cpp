@@ -17,9 +17,10 @@
 #include "AbilitySystem/ActorComponents/AG_CharacterMovementComponent.h"
 #include "AbilitySystem/Attributes/AG_AttributeSetBase.h"
 #include "AbilitySystem/Components/AG_AbilitySystemComponentBase.h"
+#include "Animation/AG_BaseMotionWarpingComponent.h"
 #include "DataAssets/CharacterDataAsset.h"
 #include "GAS/AbilitySystem/ActorComponents/AG_FootstepsComponent.h"
-#include "AbilitySystem/ActorComponents/AG_CharacterMovementComponent.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -48,6 +49,8 @@ AGASCharacter::AGASCharacter(const FObjectInitializer& ObjectInitializer) : Supe
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
+	GASCharacterMovementComponent = Cast<UAG_CharacterMovementComponent>(GetCharacterMovement());
+	
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -74,6 +77,9 @@ AGASCharacter::AGASCharacter(const FObjectInitializer& ObjectInitializer) : Supe
 
 	// Footsteps
 	FootstepsComponent = CreateDefaultSubobject<UAG_FootstepsComponent>(TEXT("FootstepsComponent"));
+
+	// Motion Warping
+	MotionWarpingComponent = CreateDefaultSubobject<UAG_BaseMotionWarpingComponent>(TEXT("MotionWarping"));
 }
 UAbilitySystemComponent* AGASCharacter::GetAbilitySystemComponent() const
 {
@@ -154,6 +160,11 @@ void AGASCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAd
 		AbilitySystemComponent->RemoveActiveGameplayEffectBySourceEffect(CrouchStateEffect, AbilitySystemComponent);
 	}
 	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+}
+
+UAG_BaseMotionWarpingComponent* AGASCharacter::GetAGMotionWarpingComponent() const
+{
+	return MotionWarpingComponent;
 }
 
 
@@ -315,11 +326,15 @@ void AGASCharacter::Look(const FInputActionValue& Value)
 
 void AGASCharacter::OnJumpStarted()
 {
-	FGameplayEventData payload;
-	payload.Instigator = this;
-	payload.EventTag = JumpEventTag;
+	// OLD JUMPING IMPLEMENTATION
+	// FGameplayEventData payload;
+	// payload.Instigator = this;
+	// payload.EventTag = JumpEventTag;
+	//
+	// UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, JumpEventTag, payload);
 
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, JumpEventTag, payload);
+	// POST MOTION WARPING TRAVERSAL IMPL
+	GASCharacterMovementComponent->TryTraversal(AbilitySystemComponent);
 }
 
 void AGASCharacter::OnJumpEnded()

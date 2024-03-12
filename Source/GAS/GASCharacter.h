@@ -10,6 +10,7 @@
 #include "Logging/LogMacros.h"
 #include "GASCharacter.generated.h"
 
+
 struct FCharacterData;
 class USpringArmComponent;
 class UCameraComponent;
@@ -20,6 +21,9 @@ class UAG_AttributeSetBase;
 
 class UGameplayEffect;
 class UGameplayAbility;
+
+class UAG_CharacterMovementComponent;
+class UAG_BaseMotionWarpingComponent;
 
 struct FInputActionValue;
 
@@ -76,6 +80,7 @@ public:
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 
+	UAG_BaseMotionWarpingComponent* GetAGMotionWarpingComponent() const;
 protected:
 	
 	void GiveAbilities();
@@ -89,6 +94,12 @@ protected:
 
 	UPROPERTY(Transient)
 	UAG_AttributeSetBase* AttributeSet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Motion Warping")
+	UAG_BaseMotionWarpingComponent* MotionWarpingComponent;
+
+	// no need for UPROPERTY, while it acts like a shared pointer, this component will be managed by the owning actor, aka, the character
+	UAG_CharacterMovementComponent* GASCharacterMovementComponent;
 	
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
