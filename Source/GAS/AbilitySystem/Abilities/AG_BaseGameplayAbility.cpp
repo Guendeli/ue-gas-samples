@@ -70,5 +70,11 @@ void UAG_BaseGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle
 
 AGASCharacter* UAG_BaseGameplayAbility::GetCharacterFromActorInfo()
 {
-	return Cast<AGASCharacter>(GetAvatarActorFromActorInfo());
+	AActor* actor = GetAvatarActorFromActorInfo();
+	if(actor)
+	{
+		return CastChecked<AGASCharacter>(actor);
+	}
+
+	return nullptr;
 }

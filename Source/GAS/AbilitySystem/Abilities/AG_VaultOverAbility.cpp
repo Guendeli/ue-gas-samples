@@ -205,6 +205,11 @@ void UAG_VaultOverAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	}
 
 	AGASCharacter* character = GetCharacterFromActorInfo();
+	if(!IsValid(character))
+	{
+		return;
+	}
+	
 	UCapsuleComponent* capsuleComp = character ? character->GetCapsuleComponent() : nullptr;
 	if(capsuleComp)
 	{
