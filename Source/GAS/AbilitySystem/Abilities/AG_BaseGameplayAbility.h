@@ -31,6 +31,6 @@ protected:
 	TArray<FActiveGameplayEffectHandle> RemoveOnEndEffectsHandle;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	AGASCharacter* GetCharacterFromActorInfo();
+	AGASCharacter* GetCharacterFromActorInfo() const;
 
 };

@@ -68,7 +68,7 @@ void UAG_BaseGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle
 	
 }
 
-AGASCharacter* UAG_BaseGameplayAbility::GetCharacterFromActorInfo()
+AGASCharacter* UAG_BaseGameplayAbility::GetCharacterFromActorInfo() const
 {
 	AActor* actor = GetAvatarActorFromActorInfo();
 	if(actor)
