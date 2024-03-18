@@ -5,6 +5,8 @@
 
 #include "AbilitySystemComponent.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
 
 UAG_JumpAbility::UAG_JumpAbility()
 {
@@ -22,8 +24,13 @@ bool UAG_JumpAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle
 	}
 
 	ACharacter* character = CastChecked<ACharacter>(ActorInfo->AvatarActor.Get(), ECastCheckedType::NullAllowed);
+	const bool bMovementAllowsJump = character->GetCharacterMovement()->IsJumpAllowed();
+
+	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(character);
+	const bool bIsWallRunning = ASC->HasMatchingGameplayTag(WallRunStateTag);
 	
-	return character->CanJump();
+	
+	return character->CanJump() || (bMovementAllowsJump && bIsWallRunning);
 }
 
 void UAG_JumpAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
